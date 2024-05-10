@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "supertrooper"
+version = "0.1.0"
+description = "a prject for supertropper createions"
+authors = ["AutoGPT <info@agpt.co>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<4.0"
+bcrypt = "^3.2.0"
+fastapi = "*"
+prisma = "*"
+pydantic = "*"
+uvicorn = "*"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

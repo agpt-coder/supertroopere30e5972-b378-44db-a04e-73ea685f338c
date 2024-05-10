@@ -1,0 +1,119 @@
+// datasource db defines the database connection settings.
+// It is configured for PostgreSQL and uses an environment variable for the connection URL.
+// The 'extensions' feature enables the use of PostgreSQL-specific data types.
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+}
+
+// generator db configures Prisma Client settings.
+// It is set up to use Prisma Client Python with asyncio interface and specific features.
+generator db {
+  provider                    = "prisma-client-py"
+  interface                   = "asyncio"
+  recursive_type_depth        = 5
+  previewFeatures             = ["postgresqlExtensions"]
+  enable_experimental_decimal = true
+}
+
+enum ProjectStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum ProjectRole {
+  OWNER
+  MEMBER
+}
+
+enum PostType {
+  IMAGE
+  VIDEO
+  TEXT
+}
+
+model User {
+  id            Int             @id @default(autoincrement())
+  email         String          @unique
+  password      String
+  role          Role            @default(USER)
+  profile       Profile?
+  projects      Project[]
+  feedbacks     Feedback[]
+  ProjectMember ProjectMember[]
+  Post          Post[]
+}
+
+model Profile {
+  id        Int         @id @default(autoincrement())
+  bio       String?
+  avatar    String?
+  userId    Int         @unique
+  user      User        @relation(fields: [userId], references: [id])
+  portfolio Portfolio[]
+}
+
+model Portfolio {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  profileId   Int
+  profile     Profile @relation(fields: [profileId], references: [id])
+}
+
+model Project {
+  id      Int             @id @default(autoincrement())
+  name    String
+  status  ProjectStatus   @default(ACTIVE)
+  tasks   Task[]
+  members ProjectMember[]
+  User    User?           @relation(fields: [userId], references: [id])
+  userId  Int?
+}
+
+model ProjectMember {
+  projectId Int
+  userId    Int
+  role      ProjectRole @default(MEMBER)
+  project   Project     @relation(fields: [projectId], references: [id])
+  user      User        @relation(fields: [userId], references: [id])
+
+  @@id([projectId, userId])
+}
+
+model Task {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  dueDate     DateTime?
+  projectId   Int
+  project     Project   @relation(fields: [projectId], references: [id])
+}
+
+model Feedback {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id])
+  postId    Int?
+  post      Post?    @relation(fields: [postId], references: [id])
+}
+
+model Post {
+  id        Int        @id @default(autoincrement())
+  title     String
+  content   Json
+  type      PostType
+  createdAt DateTime   @default(now())
+  userId    Int
+  user      User       @relation(fields: [userId], references: [id])
+  feedbacks Feedback[]
+}
+
+enum Role {
+  ADMIN
+  USER
+  GUEST
+}
